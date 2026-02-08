@@ -108,6 +108,7 @@ body {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
+  font-family: 'Architects Daughter';
 }
 
 body {
@@ -140,24 +141,21 @@ Retrieved 2026-02-07, License - CC BY-SA 4.0
 */
 
 .lightbox {
-  position: fixed;
-  top: 0;
-  bottom: 0;
-  left: 0;
-  right: 0;
+  position: fixed;  
+  right: 100px;
+  top:50px;
+
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(0, 0, 0, .5)
+  background: rgba(0, 0, 0, .5);
+  z-index: 9999;   
 }
 .toolbarLB {
   text-align: right;
   padding: 3px;
 }
-.closeLB {
-  color: red;
-  cursor: pointer;
-}
+
 .lightbox .iframeContainer {
   vertical-align: middle;
   background: #CCC;
@@ -165,4 +163,30 @@ Retrieved 2026-02-07, License - CC BY-SA 4.0
 }
 .lightbox.closed {
   display: none;
+}
+
+.lightbox2{
+     position: fixed;  
+  left: 100px;
+  top:50px;
+  width:200px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 3px;
+  background: rgba(255, 255, 255);
+  z-index: 9999;   
+}
+
+.lightbox3{
+     position: fixed;  
+  right: 300px;
+  top:50px;
+  width:200px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 3px;
+  background: rgba(255, 255, 255);
+  z-index: 9999;   
 }

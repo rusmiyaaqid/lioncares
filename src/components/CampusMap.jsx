@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react'
 import { MapPin, Users } from 'lucide-react'
 import { clubs } from '../data/clubs'
+import { npcs } from '../data/npcs'  // If you made a new file
+
 
 // Isometric Pixel Art Female Student Sprite Component
 function PixelSprite({ direction }) {
@@ -163,6 +165,13 @@ function PixelSprite({ direction }) {
 function CampusMap() {
   const [playerDirection, setPlayerDirection] = useState('down')
   const [selectedClub, setSelectedClub] = useState(null)
+  const [showWelcome, setShowWelcome] = useState(true)  // ← ADD THIS LINE
+  const [selectedNPC, setSelectedNPC] = useState(null)
+
+  const [xp, setXp] = useState(0)
+
+
+
   const [playerPosition, setPlayerPosition] = useState({ 
     x: 2430,
     y:1650 
@@ -241,18 +250,114 @@ function CampusMap() {
 
   return (
     <div className="relative w-full h-screen overflow-hidden bg-gray-900">
+       {showWelcome && (
+        <div className="lightbox">
+          <div className="iframeContainer" style={{ maxWidth: '600px', padding: '20px', background: '#fff' }}>
+            <button 
+              onClick={() => setShowWelcome(false)}
+              style={{
+                position: 'relative',
+                left: '240px',
+                color: 'red',
+                border: 'none',
+                cursor: 'pointer',
+                fontSize: '20px',
+                fontWeight: 'bold',
+                borderRadius: '5px',
+                alignItems: 'right',
+                justifyContent: 'right',
+                background: 'None'
+              }}
+            > x
+            </button>
+            <h1 style={{ fontSize: '24px', marginBottom: '20px', textAlign: 'center', fontWeight: 'bold' }}>
+              Welcome to LionCares
+            </h1>
+            
+            <p style={{ marginBottom: '20px', textAlign: 'center' }}>
+              Columbia needs your help right now!
+            </p>
+            
+            <div style={{ background: 'rgba(199, 206, 194, 1)', padding: '15px', marginBottom: '20px' }}>
+              <h2 style={{ fontSize: '18px', color: 'rgba(0, 0, 0, 1)', marginBottom: '15px', fontWeight: 'bold' }}>
+                Urgent Needs at Columbia:
+              </h2>
+              
+              {clubs.filter(club => club.volunteersNeeded > 0).length > 0 ? (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                  {clubs.filter(club => club.volunteersNeeded > 0).map(club => (
+                    <div key={club.id} style={{ background: 'white', padding: '12px' }}>
+                      <div style={{ fontWeight: 'bold', marginBottom: '5px' }}>{club.name}</div>
+                      <div style={{ fontSize: '14px', color: '#666', marginBottom: '5px' }}>
+                        {club.cause} at {club.location}
+                      </div>
+                      <div style={{ 
+                        background: 'rgba(91, 135, 89, 1)', 
+                        color: 'white', 
+                        padding: '5px 10px', 
+                        display: 'inline-block',
+                        fontSize: '14px',
+                        fontWeight: 'bold',
+                        opacity: 0.8,
+    
+                      }}>
+                        {club.volunteersNeeded} needed
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p style={{ textAlign: 'center', padding: '20px' }}>
+                  All clubs fully staffed!
+                </p>
+              )}
+            </div>
+            
+            <p style={{ fontSize: '14px', textAlign: 'center', marginBottom: '15px' }}>
+              Use <strong>WASD</strong> or <strong>Arrow Keys</strong> to explore campus!
+            </p>
+            
+          </div>
+        </div>
+      )}
+
+      
       {/* Controls display */}
       <div className="absolute top-4 right-4 bg-amber-50 px-4 py-2 rounded-lg border-4 border-amber-900 z-50 shadow-lg">
         <p className="text-sm font-bold text-amber-900">WASD or ↑↓←→ to Move</p>
       </div>
 
       {/* Online players counter */}
-      <div className="absolute top-4 left-4 bg-amber-50 px-4 py-3 rounded-lg shadow-lg z-50 border-4 border-amber-900">
-        <div className="flex items-center gap-2">
-          <Users className="w-5 h-5 text-green-600" />
-          <span className="font-bold text-green-600">7 online</span>
-        </div>
+      {/* Profile Card - Top Left */}
+<div className="lightbox2">
+  <div className="flex items-center gap-3">
+    {/* Profile Icon */}
+    <div className="w-12 h-12 bg-blue-500 rounded-full border-3 border-blue-800 flex items-center justify-center text-white font-bold text-xl">
+      👤
+    </div>
+    
+    {/* Info */}
+    <div className="flex flex-col gap-1">
+      <span className="pixel-font text-blue-700 text-xs">You</span>
+      <div className="flex items-center gap-1">
+        <span className="text-sm">⭐</span>
+        <span className="pixel-font text-blue-600 text-xs">{xp} XP</span>
       </div>
+      <div className="flex items-center gap-1">
+        <Users className="w-3 h-3 text-green-600" />
+        <span className="pixel-font text-green-600 text-xs">7 online</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+      {/* XP counter - NEW */}
+        <div className="absolute top-20 left-4 bg-amber-50 px-4 py-3 rounded-lg shadow-lg z-50 border-4 border-amber-900">
+        <div className="flex items-center gap-2">
+            <span className="text-2xl">⭐</span>
+            <span className="pixel-font text-blue-600">{xp} XP</span>
+        </div>
+        </div>
 
       {/* Game world */}
       <div 
@@ -278,39 +383,88 @@ function CampusMap() {
         
         {/* Club markers */}
         {clubs.map(club => (
-          <button
-            key={club.id}
-            onClick={() => setSelectedClub(club)}
-            style={{ 
-              position: 'absolute',
-              left: `${club.x}%`, 
-              top: `${club.y}%`,
-              transform: 'translate(-50%, -100%)',
-              zIndex: 20
-            }}
-            className="hover:scale-125 transition-transform cursor-pointer"
-            aria-label={`View ${club.name}`}
-          >
-            <MapPin className="w-10 h-10 text-red-600 fill-red-600 drop-shadow-lg" 
-              style={{ imageRendering: 'pixelated' }} 
-            />
-            <div className="bg-amber-50 px-2 py-1 rounded border-2 border-amber-900 text-xs font-bold shadow-md mt-1 whitespace-nowrap">
-              {club.name}
-            </div>
-            {club.volunteersNeeded > 0 && (
-              <div 
+            <button
+                key={club.id}
+                onClick={() => setSelectedClub(club)}
                 style={{ 
-                  position: 'absolute', 
-                  top: '-8px', 
-                  right: '-8px' 
-                }} 
-                className="bg-red-600 text-white text-xs px-2 py-1 rounded-full border-2 border-white shadow-lg font-bold"
-              >
-                {club.volunteersNeeded}
-              </div>
-            )}
-          </button>
+                position: 'absolute',
+                left: `${club.x}%`, 
+                top: `${club.y}%`,
+                transform: 'translate(-50%, -100%)',
+                zIndex: 20
+                }}
+                className="hover:scale-110 transition-transform cursor-pointer"
+                aria-label={`View ${club.name}`}
+            >
+                <MapPin className="w-10 h-10 text-red-600 fill-red-600 drop-shadow-lg" 
+                style={{ imageRendering: 'pixelated' }} 
+                />
+                {/* This text is now clickable because it's inside the button */}
+                <div className="bg-amber-50 px-2 py-1 rounded border-2 border-amber-900 text-xs font-bold shadow-md mt-1 max-w-[200px] hover:bg-amber-100">
+                {club.cause} at {club.location}
+                </div>
+                {club.volunteersNeeded > 0 && (
+                <div 
+                    style={{ 
+                    position: 'absolute', 
+                    top: '-8px', 
+                    right: '-8px' 
+                    }} 
+                    className="bg-red-600 text-white text-xs px-2 py-1 rounded-full border-2 border-white shadow-lg font-bold"
+                >
+                    {club.volunteersNeeded}
+                </div>
+                )}
+            </button>
+            ))}
+        {/* NPC Students - ADD THIS */}
+        {npcs.map(npc => (
+        <div
+            key={`npc-${npc.id}`}
+            style={{
+            position: 'absolute',
+            left: `${npc.x}%`,
+            top: `${npc.y}%`,
+            transform: 'translate(-50%, -50%)',
+            zIndex: 25,
+            cursor: 'pointer'
+            }}
+            onClick={() => setSelectedNPC(npc)}
+        >
+            <PixelSprite direction={npc.direction} />
+            <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 bg-black bg-opacity-70 text-white text-xs px-2 py-0.5 rounded whitespace-nowrap">
+            {npc.name}
+            </div>
+        </div>
         ))}
+        {/* // Add NPC dialogue modal (put this right after your club modal): */}
+        {selectedNPC && (
+        <div 
+            className="lightbox2"
+            onClick={() => setSelectedNPC(null)}
+        >
+            <div 
+            className="bg-amber-50 p-6 rounded-lg border-8 border-amber-900 max-w-md w-full shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+            >
+            <div className="flex items-center gap-3 mb-4">
+                <div style={{ transform: 'scale(0.5)', transformOrigin: 'left' }}>
+                <PixelSprite direction={selectedNPC.direction} />
+                </div>
+                <h2 className="text-xl font-bold text-amber-900">{selectedNPC.name}</h2>
+            </div>
+            
+            <p className="text-amber-900 mb-6 italic">"{selectedNPC.message}"</p>
+            
+            <button 
+                onClick={() => setSelectedNPC(null)}
+                className="w-full bg-blue-600 text-white px-4 py-3 rounded-lg hover:bg-blue-700 font-bold shadow-lg border-4 border-blue-800 transition-colors"
+            >
+                Thanks!
+            </button>
+            </div>
+        </div>
+        )}
 
         {/* Player character */}
         <div 
@@ -329,7 +483,9 @@ function CampusMap() {
       {/* Club detail modal */}
       {selectedClub && (
         <div 
-          className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4"
+          className="lightbox3"
+        //   style={{ zIndex: 9999 }}
+
           onClick={() => setSelectedClub(null)}
         >
           <div 
@@ -340,14 +496,25 @@ function CampusMap() {
             <p className="text-sm text-amber-700 mb-4">📍 {selectedClub.location}</p>
             <p className="mb-6 text-amber-900">{selectedClub.description}</p>
             
-            {selectedClub.volunteersNeeded > 0 && (
+            {selectedClub.volunteersNeeded > 0 && selectedClub.donationGoal > 0 &&(
               <div className="bg-red-100 border-2 border-red-600 rounded p-3 mb-4">
                 <p className="font-bold text-red-700">
-                  Need {selectedClub.volunteersNeeded} volunteer{selectedClub.volunteersNeeded !== 1 ? 's' : ''}!
+                  Need {selectedClub.volunteersNeeded} volunteer{selectedClub.volunteersNeeded !== 1 ? 's' : ''}! Please donate to hit the donation goal of ${selectedClub.donationGoal}, we are currently at ${selectedClub.donationCurrent}
                 </p>
               </div>
             )}
-            
+            <button 
+                onClick={() => {
+                // Add registration logic here
+                setXp(xp + 5)
+                alert(`You're registering to help with ${selectedClub.name}! The organizer appreciates your kindness <3`)
+ 
+                // You can later replace this with actual registration logic
+                }}
+                className="w-full bg-green-600 text-white px-4 py-3 rounded-lg hover:bg-green-700 font-bold shadow-lg border-4 border-green-800 transition-colors mb-3"
+            >
+                Register to Help!
+            </button>
             <button 
               onClick={() => setSelectedClub(null)}
               className="w-full bg-blue-600 text-white px-4 py-3 rounded-lg hover:bg-blue-700 font-bold shadow-lg border-4 border-blue-800 transition-colors"
