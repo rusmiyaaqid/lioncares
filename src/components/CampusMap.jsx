@@ -164,8 +164,8 @@ function CampusMap() {
   const [playerDirection, setPlayerDirection] = useState('down')
   const [selectedClub, setSelectedClub] = useState(null)
   const [playerPosition, setPlayerPosition] = useState({ 
-    x: 1000,
-    y: 800 
+    x: 2430,
+    y:1650 
   })
   const [cameraPosition, setCameraPosition] = useState({ x: 500, y: 300 })
 
