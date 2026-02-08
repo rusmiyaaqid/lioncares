@@ -2,6 +2,11 @@ import { useState, useEffect } from 'react'
 import { MapPin, Users } from 'lucide-react'
 import { clubs } from '../data/clubs'
 import { npcs } from '../data/npcs'  // If you made a new file
+import { playNPCSpeech } from '../utils/speech'  // ADD THIS LINE
+import { testSpeech } from '../test-speech'
+import { generateWhimsicalIntro } from "../utils/featherlessIntro"
+
+
 
 
 // Isometric Pixel Art Female Student Sprite Component
@@ -167,6 +172,11 @@ function CampusMap() {
   const [selectedClub, setSelectedClub] = useState(null)
   const [showWelcome, setShowWelcome] = useState(true)  // ← ADD THIS LINE
   const [selectedNPC, setSelectedNPC] = useState(null)
+  const [isSpeaking, setIsSpeaking] = useState(false)  // ADD THIS LINE
+  const [introText, setIntroText] = useState("")
+  const [introLoading, setIntroLoading] = useState(false)
+  
+
 
   const [xp, setXp] = useState(0)
 
@@ -177,6 +187,35 @@ function CampusMap() {
     y:1650 
   })
   const [cameraPosition, setCameraPosition] = useState({ x: 500, y: 300 })
+  const handleNPCClick = async (npc) => {
+    setSelectedNPC(npc)
+    setIsSpeaking(true)
+    
+    try {
+      await playNPCSpeech(npc.message, npc.voiceId)
+    } finally {
+      setIsSpeaking(false)
+    }
+  }
+
+  
+useEffect(() => {
+  if (!showWelcome) return
+
+  setIntroLoading(true)
+
+  generateWhimsicalIntro()
+    .then((text) => setIntroText(text))
+    .catch((e) => {
+      console.error("Intro gen failed:", e)
+      setIntroText("You step onto campus with a quiet feeling that today matters. Someone out there needs you—and you’re ready.")
+    })
+    .finally(() => setIntroLoading(false))
+}, [showWelcome])
+
+
+
+
 
   useEffect(() => {
     const keys = {}
@@ -195,6 +234,7 @@ function CampusMap() {
 
     window.addEventListener('keydown', handleKeyDown)
     window.addEventListener('keyup', handleKeyUp)
+    
 
     const gameLoop = setInterval(() => {
       setPlayerPosition(prev => {
@@ -274,8 +314,11 @@ function CampusMap() {
               Welcome to LionCares
             </h1>
             
-            <p style={{ marginBottom: '20px', textAlign: 'center' }}>
+            {/* <p style={{ marginBottom: '20px', textAlign: 'center' }}>
               Columbia needs your help right now!
+            </p> */}
+            <p style={{ marginBottom: '20px', textAlign: 'center', fontStyle: 'italic' }}>
+              {introLoading ? "✨ Spinning up a little magic..." : (introText || "You step onto campus with a quiet feeling that today matters.")}
             </p>
             
             <div style={{ background: 'rgba(199, 206, 194, 1)', padding: '15px', marginBottom: '20px' }}>
@@ -326,6 +369,26 @@ function CampusMap() {
       <div className="absolute top-4 right-4 bg-amber-50 px-4 py-2 rounded-lg border-4 border-amber-900 z-50 shadow-lg">
         <p className="text-sm font-bold text-amber-900">WASD or ↑↓←→ to Move</p>
       </div>
+      {/* TEST BUTTON - ADD THIS */}
+<div className="absolute top-16 right-4 z-50">
+  <button 
+    onClick={() => testSpeech()}
+    className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 font-bold shadow-lg border-4 border-red-800"
+  >
+    🎤 Test Speech
+  </button>
+</div>
+
+<button 
+  onClick={() => {
+    const beep = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBCeH0fPTgjMGHm7A7+OZTRALT6zn77BdGAg+ldb0yHsrBSl+zPLaizsKGGS57OihUhELTKXi8bllHAU2jdXzzn0vBSd6y/DajUALFmS37OagUhELTKXi8bllHAU2jdXzzn0vBSd6y/DajUALFmS37OagUhELTKXi8bllHAU2jdXzzn0vBSd6y/DajUAL')
+    beep.play()
+    console.log('Playing beep...')
+  }}
+  className="bg-green-500 text-white px-4 py-2 rounded-lg"
+>
+  🔔 Test Beep
+</button>
 
       {/* Online players counter */}
       {/* Profile Card - Top Left */}
@@ -429,11 +492,17 @@ function CampusMap() {
             zIndex: 25,
             cursor: 'pointer'
             }}
-            onClick={() => setSelectedNPC(npc)}
+            onClick={() => handleNPCClick(npc)}  // CHANGED
+
+            // onClick={() => setSelectedNPC(npc)}
         >
             <PixelSprite direction={npc.direction} />
             <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 bg-black bg-opacity-70 text-white text-xs px-2 py-0.5 rounded whitespace-nowrap">
             {npc.name}
+            {/* ADD THESE LINES */}
+            {selectedNPC?.id === npc.id && isSpeaking && (
+              <span className="ml-1 animate-pulse">🔊</span>
+            )}
             </div>
         </div>
         ))}
@@ -452,10 +521,22 @@ function CampusMap() {
                 <PixelSprite direction={selectedNPC.direction} />
                 </div>
                 <h2 className="text-xl font-bold text-amber-900">{selectedNPC.name}</h2>
+                {/* ADD THESE LINES */}
+                {isSpeaking && (
+                  <span className="text-xs text-green-600 animate-pulse">
+                    Speaking...
+                  </span>
+                )}
             </div>
             
             <p className="text-amber-900 mb-6 italic">"{selectedNPC.message}"</p>
-            
+            {/* ADD THIS ENTIRE BUTTON */}
+            <button
+              onClick={() => playNPCSpeech(selectedNPC.message, selectedNPC.voiceId)}
+              className="w-full bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 font-bold shadow-lg border-4 border-green-800 transition-colors mb-3"
+            >
+              Play Again
+            </button>
             <button 
                 onClick={() => setSelectedNPC(null)}
                 className="w-full bg-blue-600 text-white px-4 py-3 rounded-lg hover:bg-blue-700 font-bold shadow-lg border-4 border-blue-800 transition-colors"
